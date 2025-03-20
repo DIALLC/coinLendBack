@@ -1,0 +1,629 @@
+{
+  "address": "4KA5XCV4DFbgcJUEhUs7QdDw97kHJ7r7tVSAiNn8XbKA",
+  "metadata": {
+    "name": "cryppush_coin",
+    "version": "0.1.0",
+    "spec": "0.1.0"
+  },
+  "instructions": [
+    {
+      "name": "add_or_update_presale_slot",
+      "docs": [
+        "Админ добавляет или обновляет слот пресейла."
+      ],
+      "discriminator": [
+        127,
+        92,
+        83,
+        22,
+        243,
+        14,
+        212,
+        184
+      ],
+      "accounts": [
+        {
+          "name": "global_state",
+          "writable": true
+        },
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "slot_id",
+          "type": "u8"
+        },
+        {
+          "name": "slot_data",
+          "type": {
+            "defined": {
+              "name": "PresaleSlot"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "buy_presale_slot",
+      "docs": [
+        "Покупка слота пресейла: проверяет, что слот существует и не исчерпан, затем переводит CPC пользователю и (если указан) бонус рефереру."
+      ],
+      "discriminator": [
+        38,
+        103,
+        189,
+        28,
+        79,
+        143,
+        134,
+        93
+      ],
+      "accounts": [
+        {
+          "name": "global_state",
+          "writable": true
+        },
+        {
+          "name": "treasury_ata",
+          "writable": true
+        },
+        {
+          "name": "treasury_authority",
+          "signer": true
+        },
+        {
+          "name": "user_ata",
+          "writable": true
+        },
+        {
+          "name": "referrer_ata",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "slot_id",
+          "type": "u8"
+        },
+        {
+          "name": "referrer_opt",
+          "type": {
+            "option": "pubkey"
+          }
+        }
+      ]
+    },
+    {
+      "name": "claim_team_tokens",
+      "docs": [
+        "Заглушки для вестинга команды и активности (реализуйте по необходимости)"
+      ],
+      "discriminator": [
+        137,
+        104,
+        44,
+        247,
+        225,
+        216,
+        99,
+        11
+      ],
+      "accounts": [
+        {
+          "name": "global_state",
+          "writable": true
+        },
+        {
+          "name": "authority",
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "give_activity_reward",
+      "discriminator": [
+        36,
+        219,
+        222,
+        128,
+        174,
+        240,
+        161,
+        36
+      ],
+      "accounts": [
+        {
+          "name": "global_state",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "_amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "initialize",
+      "docs": [
+        "Инициализация: создаёт глобальное состояние, сохраняет параметры распределения и минтит все токены в PDA-аккаунт treasury."
+      ],
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [
+        {
+          "name": "global_state",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  108,
+                  111,
+                  98,
+                  97,
+                  108,
+                  45,
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "mint_authority",
+          "signer": true
+        },
+        {
+          "name": "treasury_ata",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "distribution",
+          "type": {
+            "defined": {
+              "name": "DistributionParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "stake_tokens",
+      "docs": [
+        "Стейкинг: перевод CPC от пользователя на стейкинг-кошелёк и запись данных стейкинга."
+      ],
+      "discriminator": [
+        136,
+        126,
+        91,
+        162,
+        40,
+        131,
+        13,
+        127
+      ],
+      "accounts": [
+        {
+          "name": "global_state",
+          "writable": true
+        },
+        {
+          "name": "user_stake",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114,
+                  45,
+                  115,
+                  116,
+                  97,
+                  107,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user_authority"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user_ata",
+          "writable": true
+        },
+        {
+          "name": "staking_vault",
+          "writable": true
+        },
+        {
+          "name": "user_authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "months",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "transfer_with_burn",
+      "docs": [
+        "Перевод с burn: из суммы вычитается 0.1% (но не более MAX_BURN_AMOUNT в сумме)."
+      ],
+      "discriminator": [
+        243,
+        51,
+        34,
+        101,
+        30,
+        183,
+        217,
+        205
+      ],
+      "accounts": [
+        {
+          "name": "global_state",
+          "writable": true
+        },
+        {
+          "name": "from_ata",
+          "writable": true
+        },
+        {
+          "name": "to_ata",
+          "writable": true
+        },
+        {
+          "name": "mint",
+          "writable": true
+        },
+        {
+          "name": "user_authority",
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "unstake_tokens",
+      "docs": [
+        "Unstake: если срок блокировки истёк, возвращаются застейканные CPC и начисляется награда."
+      ],
+      "discriminator": [
+        58,
+        119,
+        215,
+        143,
+        203,
+        223,
+        32,
+        86
+      ],
+      "accounts": [
+        {
+          "name": "user_stake",
+          "writable": true
+        },
+        {
+          "name": "staking_vault",
+          "writable": true
+        },
+        {
+          "name": "staking_vault_authority",
+          "signer": true
+        },
+        {
+          "name": "user_ata",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "GlobalState",
+      "discriminator": [
+        163,
+        46,
+        74,
+        168,
+        216,
+        123,
+        133,
+        98
+      ]
+    },
+    {
+      "name": "UserStake",
+      "discriminator": [
+        102,
+        53,
+        163,
+        107,
+        9,
+        138,
+        87,
+        153
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidAllocation",
+      "msg": "Invalid token allocation"
+    },
+    {
+      "code": 6001,
+      "name": "Unauthorized",
+      "msg": "Unauthorized"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidSlotId",
+      "msg": "Invalid slot id"
+    },
+    {
+      "code": 6003,
+      "name": "SlotSoldOut",
+      "msg": "Slot sold out"
+    },
+    {
+      "code": 6004,
+      "name": "LockupNotFinished",
+      "msg": "Lockup not finished"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidReferrer",
+      "msg": "Invalid referrer account"
+    }
+  ],
+  "types": [
+    {
+      "name": "DistributionParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "team",
+            "type": "u64"
+          },
+          {
+            "name": "marketing",
+            "type": "u64"
+          },
+          {
+            "name": "reserve",
+            "type": "u64"
+          },
+          {
+            "name": "community",
+            "type": "u64"
+          },
+          {
+            "name": "presale",
+            "type": "u64"
+          },
+          {
+            "name": "liquidity",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "GlobalState",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "total_burned",
+            "type": "u64"
+          },
+          {
+            "name": "team_amount",
+            "type": "u64"
+          },
+          {
+            "name": "marketing_amount",
+            "type": "u64"
+          },
+          {
+            "name": "reserve_amount",
+            "type": "u64"
+          },
+          {
+            "name": "community_amount",
+            "type": "u64"
+          },
+          {
+            "name": "presale_amount",
+            "type": "u64"
+          },
+          {
+            "name": "liquidity_amount",
+            "type": "u64"
+          },
+          {
+            "name": "presale_slots",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "PresaleSlot"
+                }
+              }
+            }
+          },
+          {
+            "name": "vesting_start",
+            "type": "i64"
+          },
+          {
+            "name": "vesting_end",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PresaleSlot",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "coin_count",
+            "type": "u64"
+          },
+          {
+            "name": "price_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "max_slot",
+            "type": "u32"
+          },
+          {
+            "name": "used_slot",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UserStake",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "staked_amount",
+            "type": "u64"
+          },
+          {
+            "name": "lockup_months",
+            "type": "u8"
+          },
+          {
+            "name": "start_ts",
+            "type": "i64"
+          }
+        ]
+      }
+    }
+  ]
+}
