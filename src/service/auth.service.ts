@@ -15,7 +15,7 @@ export class AuthService {
     @InjectRepository(User) private userRepo: Repository<User>,
     private configService: ConfigService,
   ) {
-    // Подключаемся к BSC testnet (или другой сети)
+    // Подключаемся к BSC testnet
     this.provider = new ethers.JsonRpcProvider(
       configService.get<string>('BSC_TESTNET_RPC'),
     );
@@ -24,7 +24,7 @@ export class AuthService {
       configService.get<string>('PRIVATE_KEY'),
       this.provider,
     );
-    // Подключаемся к смарт-контракту
+    // Смарт-контракт
     this.contract = new ethers.Contract(
       configService.get<string>('CONTRACT_ADDRESS'),
       JSON.parse(configService.get<string>('CONTRACT_ABI')),
@@ -32,26 +32,35 @@ export class AuthService {
     );
   }
 
+  /**
+   * Регистрируем юзера, если ещё нет.
+   * Если есть `referredBy` (это рефКОД, не адрес), то
+   * вызываем setReferrer(...) в контракте,
+   * передавая (walletAddress, referrer.walletAddress).
+   */
   async registerUser(walletAddress: string, referredBy?: string) {
     let user = await this.userRepo.findOne({ where: { walletAddress } });
     if (user) {
-      return user;
+      return user; // уже есть, просто возвращаем
     }
 
+    // Генерируем реферальный код
     const referralCode = Math.random().toString(36).substr(2, 8);
 
     user = this.userRepo.create({
       walletAddress,
       referralCode,
-      referredBy,
+      referredBy, // сохраняем строку (чужой referralCode)
     });
     await this.userRepo.save(user);
 
     if (referredBy) {
+      // Находим рефера по referralCode
       const referrer = await this.userRepo.findOne({
         where: { referralCode: referredBy },
       });
       if (referrer) {
+        // Если реферер найден, вызовем setReferrer(...) в контракте
         const tx = await this.contract.setReferrer(
           walletAddress,
           referrer.walletAddress,
@@ -63,11 +72,19 @@ export class AuthService {
     return user;
   }
 
+  /**
+   * Начисляем бонус (например, в BNB).
+   * Увеличиваем referralBalance у реферера.
+   */
   async addReferralBonus(buyer: string, amount: number) {
+    // buyer – тот, кто купил
     const user = await this.userRepo.findOne({
       where: { walletAddress: buyer },
     });
+    if (!user) return { success: false, reason: 'User not found' };
+
     if (user?.referredBy) {
+      // user.referredBy – это рефКОД, а не адрес
       const referrer = await this.userRepo.findOne({
         where: { referralCode: user.referredBy },
       });
@@ -79,6 +96,9 @@ export class AuthService {
     return { success: true };
   }
 
+  /**
+   * Возвращаем пользователю ссылку вида: https://test.coin.cryppush.net?ref=CODE
+   */
   async getReferralLink(walletAddress: string) {
     const user = await this.userRepo.findOne({ where: { walletAddress } });
     if (!user) {
@@ -88,6 +108,9 @@ export class AuthService {
     return { link: `${domain}?ref=${user.referralCode}` };
   }
 
+  /**
+   * Сколько у юзера рефералов, сколько он заработал
+   */
   async getReferralsStats(walletAddress: string) {
     const user = await this.userRepo.findOne({ where: { walletAddress } });
     if (!user) {
@@ -96,7 +119,7 @@ export class AuthService {
     const referralsCount = await this.userRepo.count({
       where: { referredBy: user.referralCode },
     });
-    const earned = user.referralBalance;
+    const earned = user.referralBalance || 0;
 
     return {
       referralsCount,
@@ -104,11 +127,21 @@ export class AuthService {
     };
   }
 
+  /**
+   * Получаем адрес рефера по его реферальному коду
+   */
   async getReferrerAddress(refCode: string) {
-    const user = await this.userRepo.findOne({ where: { referralCode: refCode } });
+    const user = await this.userRepo.findOne({
+      where: { referralCode: refCode },
+    });
     if (!user) {
       throw new Error('User not found');
     }
     return { address: user.walletAddress };
+  }
+
+  async getUserCount() {
+    const count = await this.userRepo.count({});
+    return { userCount: count };
   }
 }
