@@ -7,13 +7,6 @@ import {
 } from 'typeorm';
 import { SlotPurchase } from './slot-purchase.entity';
 
-/**
- * Пользователь
- * - уникальный walletAddress
- * - уникальный referralCode
- * - может быть 'referredBy' (чей реф.код его пригласил)
- * - referralBalance: сколько CPC заработал на рефералах
- */
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')

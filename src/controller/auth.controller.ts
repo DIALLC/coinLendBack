@@ -45,4 +45,9 @@ export class AuthController {
   async getReferralsStats(@Query('walletAddress') wallet: string) {
     return this.authService.getReferralsStats(wallet);
   }
+
+  @Get('referrer-address')
+  async getReferrerAddress(@Query('refCode') refCode: string) {
+    return this.authService.getReferrerAddress(refCode);
+  }
 }
