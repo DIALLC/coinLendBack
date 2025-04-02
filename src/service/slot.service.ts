@@ -110,12 +110,12 @@ export class SlotService {
 
     // 3) Проверим, что у пользователя действительно достаточно BNB
     // (для наглядности, но, по сути, если tx прошёл, значит деньги были)
-    const totalPrice = slot.coinCount * slot.pricePerToken;
-    const buyerBalance = await this.provider.getBalance(buyer);
-    const neededWei = ethers.parseEther(String(totalPrice));
-    if (buyerBalance < neededWei) {
-      throw new Error('Insufficient BNB balance (on chain) to buy the slot');
-    }
+    const totalPrice = slot.coinCount;
+    // const buyerBalance = await this.provider.getBalance(buyer);
+    // const neededWei = ethers.parseEther(String(totalPrice));
+    // if (buyerBalance < neededWei) {
+    //   throw new Error('Insufficient BNB balance (on chain) to buy the slot');
+    // }
 
     // 4) Теперь записываем покупку в БД и увеличиваем usedSlot
     slot.usedSlot += 1;
