@@ -104,7 +104,7 @@ export class SlotService {
       throw new Error('Tx sender does not match buyer address');
     }
 
-    const totalPrice = slot.coinCount * slot.pricePerToken;
+    const totalPrice = slot.coinCount;
     const buyerBalance = await this.provider.getBalance(buyer);
     const neededWei = ethers.parseEther(String(totalPrice));
     if (buyerBalance < neededWei) {
