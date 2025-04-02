@@ -11,7 +11,7 @@ import { AuthService } from './auth.service';
 export class SlotService {
   private provider: ethers.JsonRpcProvider;
   private slots = [
-    { id: 1, coinCount: 20000, pricePerToken: 0.0000000028, count: 500, usedSlot: 0 },
+    { id: 1, coinCount: 20000, pricePerToken: 0.0000000028, count: 500, usedSlot: 15 },
     { id: 2, coinCount: 12500, pricePerToken: 0.0000328, count: 800, usedSlot: 0 },
     { id: 3, coinCount: 10000, pricePerToken: 0.00003727, count: 1000, usedSlot: 0 },
     { id: 4, coinCount: 8000, pricePerToken: 0.000042, count: 1250, usedSlot: 0 },
