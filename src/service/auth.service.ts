@@ -77,13 +77,12 @@ export class AuthService {
    * Увеличиваем referralBalance у реферера.
    */
   async addReferralBonus(buyer: string, amount: number) {
-    console.log("buyer", buyer);
-    console.log("amount", amount);
+    console.log(buyer);
+    console.log(amount);
 
     const user = await this.userRepo.findOne({
       where: { walletAddress: buyer },
     });
-
     if (!user) return { success: false, reason: 'User not found' };
 
     if (user?.referredBy) {

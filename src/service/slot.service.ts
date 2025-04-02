@@ -87,6 +87,7 @@ export class SlotService {
       throw new Error('No slots available');
     }
 
+    // Снова проверим, не покупал ли он этот слот уже
     const existingPurchase = await this.slotPurchaseRepo.findOne({
       where: { user: { id: user.id }, slotId: slot.id },
     });
@@ -94,23 +95,29 @@ export class SlotService {
       throw new Error('User has already purchased this slot');
     }
 
+    // 1) Проверяем транзакцию на блокчейне
     const receipt = await this.provider.getTransactionReceipt(txHash);
     if (!receipt || receipt.status !== 1) {
       throw new Error('Transaction not found or failed');
     }
 
+    // 2) Проверяем, что `receipt.from` совпадает с buyer
+    // (Можно проверить, что этот tx действительно отправлен от нужного адреса)
     const tx = await this.provider.getTransaction(txHash);
     if (tx.from.toLowerCase() !== buyer.toLowerCase()) {
       throw new Error('Tx sender does not match buyer address');
     }
 
-    const totalPrice = slot.coinCount;
+    // 3) Проверим, что у пользователя действительно достаточно BNB
+    // (для наглядности, но, по сути, если tx прошёл, значит деньги были)
+    const totalPrice = slot.coinCount * slot.pricePerToken;
     const buyerBalance = await this.provider.getBalance(buyer);
     const neededWei = ethers.parseEther(String(totalPrice));
     if (buyerBalance < neededWei) {
       throw new Error('Insufficient BNB balance (on chain) to buy the slot');
     }
 
+    // 4) Теперь записываем покупку в БД и увеличиваем usedSlot
     slot.usedSlot += 1;
     const slotPurchase = this.slotPurchaseRepo.create({
       user,
@@ -118,6 +125,8 @@ export class SlotService {
     });
     await this.slotPurchaseRepo.save(slotPurchase);
 
+    // 5) Начисляем реферальный бонус (если у user есть referredBy)
+    // Допустим, делаем 10% от totalPrice
     const bonusBnb = totalPrice * 0.1;
     await this.authService.addReferralBonus(buyer, bonusBnb);
 
