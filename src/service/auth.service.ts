@@ -4,6 +4,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ethers } from 'ethers';
 import { ConfigService } from '@nestjs/config';
 import { User } from '../model/user.entity';
+const BOT_TOKEN = process.env.TG_BOT_TOKEN;
+const CHAT_ID = process.env.TG_CHAT_ID;
 
 @Injectable()
 export class AuthService {
@@ -139,6 +141,17 @@ export class AuthService {
       throw new Error('User not found');
     }
     return { address: user.walletAddress };
+  }
+
+  async getTgUserCount() {
+    try {
+      const url = `https://api.telegram.org/bot${BOT_TOKEN}/getChatMemberCount?chat_id=${CHAT_ID}`;
+      const tgRes = await fetch(url).then((r) => r.json());
+      if (!tgRes.ok) throw new Error(tgRes.description);
+      return { count: tgRes.result };
+    } catch (err) {
+      return { count: 0 };
+    }
   }
 
   async getUserCount() {

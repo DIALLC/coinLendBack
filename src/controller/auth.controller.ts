@@ -40,4 +40,9 @@ export class AuthController {
   async getUserCount() {
     return this.authService.getUserCount();
   }
+
+  @Get('tg/user-count')
+  async getTgUserCount() {
+    return this.authService.getTgUserCount();
+  }
 }
