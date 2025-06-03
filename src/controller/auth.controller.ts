@@ -1,24 +1,20 @@
-import { Controller, Post, Body, Get, Query } from '@nestjs/common';
+import { Controller, Post, Body, Get, Query, UseGuards, Req } from "@nestjs/common";
 import { AuthService } from '../service/auth.service';
+import { JwtAuthGuard } from '../guard/jwt-auth.guard';
+import { UsersService } from '../service/users.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UsersService,
+  ) {}
 
   @Post('register')
   async registerUser(
     @Body() body: { walletAddress: string; referredBy?: string },
   ) {
     return this.authService.registerUser(body.walletAddress, body.referredBy);
-  }
-
-  /**
-   * Если хотите вручную вызывать добавление бонуса (необязательно),
-   * можно оставить как есть.
-   */
-  @Post('bonus')
-  async addBonus(@Body() body: { buyer: string; amount: number }) {
-    return this.authService.addReferralBonus(body.buyer, body.amount);
   }
 
   @Get('ref-link')
@@ -44,5 +40,11 @@ export class AuthController {
   @Get('tg/user-count')
   async getTgUserCount() {
     return this.authService.getTgUserCount();
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('history')
+  getMyHistory(@Req() req) {
+    return this.userService.getForUser(req.user.sub);
   }
 }

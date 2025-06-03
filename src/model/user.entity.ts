@@ -2,10 +2,11 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  OneToMany,
   CreateDateColumn,
+  OneToMany,
 } from 'typeorm';
-import { SlotPurchase } from './slot-purchase.entity';
+import { SessionParticipant } from './session-participant.entity';
+import { Transaction } from './transaction.entity';
 
 @Entity('users')
 export class User {
@@ -15,18 +16,30 @@ export class User {
   @Column({ unique: true })
   walletAddress: string;
 
-  @Column({ unique: true })
+  @Column({ default: 0 })
+  balance: number;
+
+  @Column({ unique: true, nullable: true })
   referralCode: string;
 
   @Column({ nullable: true })
-  referredBy: string; // referralCode того, кто пригласил
+  referredBy: string;
 
   @Column({ type: 'decimal', default: 0 })
-  referralBalance: number; // Сколько CPC заработал от рефералов
+  referralBalance: number;
 
-  @OneToMany(() => SlotPurchase, (purchase) => purchase.user)
-  purchases: SlotPurchase[];
+  @Column({ unique: true, nullable: true })
+  email: string;
+
+  @Column({ unique: true, nullable: true })
+  telegramLogin: string;
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @OneToMany(() => SessionParticipant, (p) => p.user)
+  participations: SessionParticipant[];
+
+  @OneToMany(() => Transaction, (t) => t.user)
+  transactions: Transaction[];
 }
