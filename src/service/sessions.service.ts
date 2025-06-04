@@ -158,7 +158,7 @@ export class SessionsService implements OnApplicationBootstrap {
       };
 
       for (const w of winners) {
-        const totalGain = bonus + stake;
+        const totalGain = bonus * 0.9 + stake;
         const status = winnerTeam
           ? ParticipantStatus.WIN
           : ParticipantStatus.CANCEL;
