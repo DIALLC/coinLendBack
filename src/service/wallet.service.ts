@@ -48,7 +48,7 @@ export class WalletService {
     const tx = await this.ether.getTransaction(txHash);
     if (
       !tx ||
-      tx.to.toLowerCase() !== '0xbd8ea4b15060f195a2ae2d45e68ca6ab2c560c6e'.toLowerCase()
+      tx.to.toLowerCase() !== '0x1b6E8782b1BfA17b36473598E89652b899AeD786'.toLowerCase()
     ) {
       throw new BadRequestException('Неверный адрес получателя');
     }
