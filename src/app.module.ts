@@ -44,7 +44,7 @@ import { EtherService } from './service/ether.service';
       port: 3306,
       username: 'root',
       password: '12345678',
-      database: 'game1',
+      database: 'gameMain',
       entities: [
         User,
         City,
