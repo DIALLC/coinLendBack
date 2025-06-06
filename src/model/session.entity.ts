@@ -40,4 +40,7 @@ export class Session {
 
   @OneToMany(() => SessionParticipant, (p) => p.session)
   participants: SessionParticipant[];
+
+  @Column({ name: 'bots_planned', default: 0 })
+  botsPlanned: number;
 }

@@ -42,4 +42,7 @@ export class User {
 
   @OneToMany(() => Transaction, (t) => t.user)
   transactions: Transaction[];
+
+  @Column({ name: 'is_bot', default: false })
+  isBot: boolean;
 }

@@ -33,6 +33,8 @@ import { Deposit } from './model/deposit.entity';
 import { Withdrawal } from './model/withdrawal.entity';
 import { PaymentCron } from './cron/payment.cron';
 import { EtherService } from './service/ether.service';
+import { BotController } from "./controller/bot.controller";
+import { BotService } from "./service/bot.service";
 
 @Module({
   imports: [
@@ -86,6 +88,7 @@ import { EtherService } from './service/ether.service';
     CitiesController,
     SessionParticipantsController,
     WalletController,
+    BotController,
   ],
   providers: [
     AuthService,
@@ -99,6 +102,7 @@ import { EtherService } from './service/ether.service';
     SessionsGateway,
     PaymentCron,
     EtherService,
+    BotService,
   ],
 })
 export class AppModule {}
