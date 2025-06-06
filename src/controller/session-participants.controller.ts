@@ -21,6 +21,13 @@ export class SessionParticipantsController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Post(':sessionId/view')
+  async markAsViewed(@Param('sessionId') sessionId: string, @Req() req) {
+    const userId = req.user.sub;
+    return this.svc.markSessionAsViewed(sessionId, userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('session/me/:id')
   meInCity(@Param('id') cityId: string, @Req() req) {
     return this.svc.joinedInfo(req.user.sub, cityId);

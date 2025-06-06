@@ -106,9 +106,7 @@ export class SessionParticipantsService {
   async getActiveForUser(userId: string) {
     const raw = await this.partRepo
       .createQueryBuilder('p')
-      .innerJoin('p.session', 's', 's.status = :status', {
-        status: SessionStatus.ACTIVE,
-      })
+      .innerJoin('p.session', 's')
       .leftJoin('s.city', 'c')
       .leftJoin('s.planet', 'pl')
       .select([
@@ -120,9 +118,30 @@ export class SessionParticipantsService {
         's.price       AS "price"',
         's.time        AS "time"',
         's.finishTime  AS "finishTime"',
+        's.status      AS "status"',
+        's.winnerTeam  AS "winnerTeam"',
         'p.team        AS "team"',
+        'p.viewed      AS "viewed"',
       ])
       .where('p.user_id = :uid', { uid: userId })
+      .andWhere(
+        `(s.status = :active OR (s.status = :finished AND p.viewed = false))`,
+        {
+          active: SessionStatus.ACTIVE,
+          finished: SessionStatus.INACTIVE,
+        },
+      )
+      .orderBy(
+        `CASE 
+        WHEN s.status = :active THEN 0 
+        WHEN s.status = :finished THEN 1 
+        ELSE 2 END`,
+        'ASC',
+      )
+      .setParameters({
+        active: SessionStatus.ACTIVE,
+        finished: SessionStatus.INACTIVE,
+      })
       .getRawMany<{
         id: string;
         cityId: string;
@@ -132,18 +151,44 @@ export class SessionParticipantsService {
         price: string;
         time: number;
         finishTime: Date;
+        status: string;
         team: string;
+        viewed: boolean;
+        winnerTeam: string | null;
       }>();
 
-    return raw.map((r) => ({
-      id: r.id,
-      city: { id: r.cityId, name: r.cityName },
-      planet: { id: r.planetId, name: r.planetName },
-      price: Number(r.price),
-      time: r.time,
-      finishTime: r.finishTime,
-      team: r.team,
-    }));
+    return raw.map((r) => {
+      let result: 'win' | 'lose' | 'draw' | null = null;
+
+      if (r.status === SessionStatus.INACTIVE) {
+        if (!r.winnerTeam) result = 'draw';
+        else if (r.winnerTeam === r.team) result = 'win';
+        else result = 'lose';
+      }
+
+      return {
+        id: r.id,
+        city: { id: r.cityId, name: r.cityName },
+        planet: { id: r.planetId, name: r.planetName },
+        price: Number(r.price),
+        time: r.time,
+        finishTime: r.finishTime,
+        status: r.status,
+        team: r.team,
+        viewed: r.viewed,
+        result,
+      };
+    });
+  }
+
+  async markSessionAsViewed(sessionId: string, userId: string): Promise<void> {
+    await this.partRepo.update(
+      {
+        session: { id: sessionId },
+        user: { id: userId },
+      },
+      { viewed: true },
+    );
   }
 
   async getSessionResult(sessionId: string, userId: string) {

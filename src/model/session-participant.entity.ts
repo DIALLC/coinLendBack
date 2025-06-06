@@ -37,4 +37,7 @@ export class SessionParticipant {
 
   @Column({ type: 'enum', enum: ParticipantTeam })
   team: ParticipantTeam;
+
+  @Column({ default: false }) // 👈 добавляем поле
+  viewed: boolean;
 }
