@@ -16,6 +16,21 @@ import { ParticipantHistory } from '../model/participant-history.entity';
 
 const TEN_SEC = 10_000;
 
+export type SessionResult = 'win' | 'lose' | 'draw' | null;
+
+export interface VisibleSessionDto {
+  id: string;
+  city: { id: string; name: string };
+  planet: { id: string; name: string };
+  price: number;
+  time: number;
+  finishTime: Date;
+  status: SessionStatus;
+  team: ParticipantTeam;
+  viewed: boolean;
+  result: SessionResult;
+}
+
 @Injectable()
 export class SessionParticipantsService {
   constructor(
@@ -103,45 +118,43 @@ export class SessionParticipantsService {
     };
   }
 
-  async getActiveForUser(userId: string) {
-    const raw = await this.partRepo
+  async getActiveForUser(userId: string): Promise<VisibleSessionDto[]> {
+    const rows = await this.partRepo
       .createQueryBuilder('p')
       .innerJoin('p.session', 's')
       .leftJoin('s.city', 'c')
       .leftJoin('s.planet', 'pl')
-      .leftJoin('session_history', 'sh', 'sh.session_id = s.id') // 👈 добавлен join
+      .leftJoin('session_history', 'sh', 'sh.sessionId = s.id') // camelCase!
       .select([
-        's.id          AS "id"',
-        'c.id          AS "cityId"',
-        'c.name        AS "cityName"',
-        'pl.id         AS "planetId"',
-        'pl.name       AS "planetName"',
-        's.price       AS "price"',
-        's.time        AS "time"',
-        's.finishTime  AS "finishTime"',
-        's.status      AS "status"',
-        'sh.winner_team AS "winnerTeam"',
-        'p.team        AS "team"',
-        'p.viewed      AS "viewed"',
+        's.id               AS "id"',
+        'c.id               AS "cityId"',
+        'c.name             AS "cityName"',
+        'pl.id              AS "planetId"',
+        'pl.name            AS "planetName"',
+        's.price            AS "price"',
+        's.time             AS "time"',
+        's.finishTime       AS "finishTime"',
+        's.status           AS "status"',
+        'sh.winnerTeam      AS "winnerTeam"',
+        'p.team             AS "team"',
+        'p.viewed           AS "viewed"',
       ])
       .where('p.user_id = :uid', { uid: userId })
       .andWhere(
-        `(s.status = :active OR (s.status = :finished AND p.viewed = false))`,
-        {
-          active: SessionStatus.ACTIVE,
-          finished: SessionStatus.INACTIVE,
-        },
+        `(s.status = :active OR (s.status = :inactive AND p.viewed = false))`,
+        { active: SessionStatus.ACTIVE, inactive: SessionStatus.INACTIVE },
       )
       .orderBy(
         `CASE 
-        WHEN s.status = :active THEN 0 
-        WHEN s.status = :finished THEN 1 
-        ELSE 2 END`,
+           WHEN s.status = :active   THEN 0
+           WHEN s.status = :inactive THEN 1
+           ELSE 2
+         END`,
         'ASC',
       )
       .setParameters({
         active: SessionStatus.ACTIVE,
-        finished: SessionStatus.INACTIVE,
+        inactive: SessionStatus.INACTIVE,
       })
       .getRawMany<{
         id: string;
@@ -152,14 +165,14 @@ export class SessionParticipantsService {
         price: string;
         time: number;
         finishTime: Date;
-        status: string;
-        team: string;
+        status: SessionStatus;
+        team: ParticipantTeam;
         viewed: boolean;
-        winnerTeam: string | null;
+        winnerTeam: ParticipantTeam | null;
       }>();
 
-    return raw.map((r) => {
-      let result: 'win' | 'lose' | 'draw' | null = null;
+    return rows.map<VisibleSessionDto>((r) => {
+      let result: SessionResult = null;
 
       if (r.status === SessionStatus.INACTIVE) {
         if (!r.winnerTeam) result = 'draw';
