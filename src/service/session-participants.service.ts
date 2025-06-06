@@ -109,6 +109,7 @@ export class SessionParticipantsService {
       .innerJoin('p.session', 's')
       .leftJoin('s.city', 'c')
       .leftJoin('s.planet', 'pl')
+      .leftJoin('session_history', 'sh', 'sh.session_id = s.id') // 👈 добавлен join
       .select([
         's.id          AS "id"',
         'c.id          AS "cityId"',
@@ -119,7 +120,7 @@ export class SessionParticipantsService {
         's.time        AS "time"',
         's.finishTime  AS "finishTime"',
         's.status      AS "status"',
-        's.winnerTeam  AS "winnerTeam"',
+        'sh.winner_team AS "winnerTeam"',
         'p.team        AS "team"',
         'p.viewed      AS "viewed"',
       ])
